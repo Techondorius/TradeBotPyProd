@@ -5,7 +5,7 @@ import taliber
 import ccxt
 import time as sleep
 import requests
-import discord_notify
+import discord_notify as noot
 import config
 
 apikey = config.apikey
@@ -121,7 +121,8 @@ while True:
 
             pprint(create_order)
             create_order = ""
-
+            corrateral = bitmex().fetch_balance()['BTC']['total']
+            noot.noot(str(float(corrateral) * 1000000) + "BTC")
         except ccxt.BaseError as e:
             print("Failed Post Order : " + str(e))
             time.sleep(20)
