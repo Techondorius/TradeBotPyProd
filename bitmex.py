@@ -6,10 +6,12 @@ import ccxt
 import time as sleep
 import requests
 import discord_notify
-import yaml
+import config
 
-with open('bitmex.yaml') as file:
-    yml = yaml.load(file)
+apikey = config.apikey
+secret = config.secret
+positionsize = config.positionsize
+lostcut = config.lostcut / 100
 
 def chart(num, ptn, dt):    #1なら終値、2なら出来高
     list1 = []
@@ -27,8 +29,8 @@ def chart(num, ptn, dt):    #1なら終値、2なら出来高
 
 def bitmex():
     bitmex = ccxt.bitmex({
-        'apiKey': '4pgicL_PhNHO5_1_TLyHWuLC',   #4pgicL_PhNHO5_1_TLyHWuLC
-        'secret': '2hpboMkWiGMMfnbpAKjQ5OxwW6VsS1-7JwgGhO0ZiA8kbWll',
+        'apiKey': apikey,
+        'secret': secret
         })
       
     return bitmex
@@ -73,11 +75,11 @@ while True:
         currentprice = currentprice['ask']
 
         try:
-            if signal > sma and positionsize < 100:
+            if signal > sma and positionsize < positionsize:
                 symbol = "BTC/USD"
                 cancel_order = bitmex().cancel_order(stop_id, symbol)
 
-                ordersize = 100 - positionsize
+                ordersize = positionsize - positionsize
                 symbol = 'BTC/USD'
                 type = 'Market'
                 side = 'Buy'
@@ -86,20 +88,20 @@ while True:
                 symbol = "BTC/USD"
                 type = "stop" 
                 side = "sell"
-                amount = 100
+                amount = positionsize
                 price = None
-                stop_price = currentprice * 0.974
+                stop_price = currentprice * (1 - lostcut)
                 stop_price = (stop_price // 0.5 + 1 ) / 2
                 print(stop_price)
                 params = { "stopPx" : stop_price }
-                create_order = bitmex().create_order(symbol, type, side, 100, price, params)
+                create_order = bitmex().create_order(symbol, type, side, positionsize, price, params)
                 stop_id = create_order["id"]
                 
-            elif signal < sma and positionsize > -100:
+            elif signal < sma and positionsize > -positionsize:
                 symbol = "BTC/USD"
                 cancel_order = bitmex().cancel_order(stop_id, symbol)
 
-                ordersize = 100 + positionsize
+                ordersize = positionsize + positionsize
                 symbol = 'BTC/USD'
                 type = 'Market'
                 side = 'Sell'
@@ -108,13 +110,13 @@ while True:
                 symbol = "BTC/USD"
                 type = "stop" 
                 side = "buy"
-                amount = 100
+                amount = positionsize
                 price = None
-                stop_price = currentprice * 1.026
-                stop_price = (stop_price // 0.5 + 1 ) / 2
+                stop_price = currentprice * (1 + lostcut)
+                stop_price = (stop_price // 0.5 - 1 ) / 2
                 print(stop_price)
                 params = { "stopPx" : stop_price }
-                create_order = bitmex().create_order(symbol, type, side, 100, price, params)
+                create_order = bitmex().create_order(symbol, type, side, positionsize, price, params)
                 stop_id = create_order["id"]
 
             pprint(create_order)
