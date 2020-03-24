@@ -10,7 +10,7 @@ import config
 
 apikey = config.apikey
 secret = config.secret
-positionsize = config.positionsize
+size = config.positionsize
 lostcut = config.lostcut / 100
 
 def chart(num, ptn, dt):    #1なら終値、2なら出来高
@@ -75,9 +75,12 @@ while True:
         currentprice = currentprice['ask']
 
         try:
-            if signal > sma and positionsize < positionsize:
-                symbol = "BTC/USD"
-                cancel_order = bitmex().cancel_order(stop_id, symbol)
+            if signal > sma and size < positionsize:
+                try:
+                    symbol = "BTC/USD"
+                    cancel_order = bitmex().cancel_order(stop_id, symbol)
+                except ccxt.BaseError as e:
+                    print("損切なし")
 
                 ordersize = positionsize - positionsize
                 symbol = 'BTC/USD'
@@ -97,9 +100,13 @@ while True:
                 create_order = bitmex().create_order(symbol, type, side, positionsize, price, params)
                 stop_id = create_order["id"]
                 
-            elif signal < sma and positionsize > -positionsize:
-                symbol = "BTC/USD"
-                cancel_order = bitmex().cancel_order(stop_id, symbol)
+            elif signal < sma and size > -positionsize:
+                try:
+                    print('売り')
+                    symbol = "BTC/USD"
+                    cancel_order = bitmex().cancel_order(stop_id, symbol)
+                except ccxt.BaseError as e:
+                    print("損切なし")
 
                 ordersize = positionsize + positionsize
                 symbol = 'BTC/USD'
@@ -124,7 +131,7 @@ while True:
             corrateral = bitmex().fetch_balance()['BTC']['total']
             noot.noot(str(float(corrateral) * 1000000) + "BTC")
         except ccxt.BaseError as e:
-            print("Failed Post Order : " + str(e))
+            print("ここ : " + str(e))
             time.sleep(20)
         
     lasttime = dt

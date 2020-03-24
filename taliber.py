@@ -22,7 +22,6 @@ def ema(prices):
     nums +=1
     return top / nums
 
-prices = [100, 10, 1]
 def wma(prices):
     nums = len(prices)
     i = 0
