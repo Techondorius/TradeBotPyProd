@@ -37,7 +37,7 @@ def bitmex():
 
 
 lasttime = 0
-create_order = ""
+create_order = '注文なし'
 stop_id = ''
 
 while True:
@@ -68,15 +68,19 @@ while True:
         signal = ( vwma + ema + wma ) / 3
         print(signal)
 
+        noot.noot(dt)
 
         balance = bitmex().private_get_position()
         positionsize = balance[0]['currentQty']
+        noot.noot("Current pos : " + str(positionsize))
         currentprice = bitmex().fetch_ticker('BTC/USD')
         currentprice = currentprice['ask']
-
+        
         try:
-            if signal > sma and size < positionsize:
+            print("LS判定開始")
+            if signal > sma and size > positionsize:
                 try:
+                    print("買い")
                     symbol = "BTC/USD"
                     cancel_order = bitmex().cancel_order(stop_id, symbol)
                 except ccxt.BaseError as e:
@@ -100,7 +104,7 @@ while True:
                 create_order = bitmex().create_order(symbol, type, side, positionsize, price, params)
                 stop_id = create_order["id"]
                 
-            elif signal < sma and size > -positionsize:
+            elif signal < sma and size < -positionsize:
                 try:
                     print('売り')
                     symbol = "BTC/USD"
@@ -129,9 +133,9 @@ while True:
             pprint(create_order)
             create_order = ""
             corrateral = bitmex().fetch_balance()['BTC']['total']
-            noot.noot(str(float(corrateral) * 1000000) + "BTC")
+            noot.noot(str(float(corrateral) * 1000000) + "μBTC")
         except ccxt.BaseError as e:
-            print("ここ : " + str(e))
+            print("注文エラー : " + str(e))
             time.sleep(20)
         
     lasttime = dt
