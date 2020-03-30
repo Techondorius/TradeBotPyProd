@@ -1,6 +1,3 @@
-import time
-import requests
-
 def  sma(prices):
     nums = len(prices)
     return sum(prices) / nums
@@ -25,6 +22,7 @@ def ema(prices):
     nums +=1
     return top / nums
 
+prices = [100, 10, 1]
 def wma(prices):
     nums = len(prices)
     i = 0
@@ -37,22 +35,3 @@ def wma(prices):
         i += 1
     bot = bot + len(prices)
     return top / bot
-
-# def chart(num, ptn, dt):    #1なら終値、2なら出来高
-#     list1 = []
-#     for i in range(num):
-#         for item in response["result"]["1800"]:
-#             if item[0] == dt:
-#                 if ptn == 1:
-#                     list1 += [item[4]]
-#                 else:
-#                     list1 += [item[5]]
-
-#         dt = dt-1800
-#         i += 1
-#     return list1
-
-# dt = time.time()
-# list1 = chart(52, 1, dt)
-# list2 = chart(52, 2, dt)
-# print(sma(list1))
